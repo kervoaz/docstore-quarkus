@@ -6,25 +6,15 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
-import java.time.OffsetDateTime;
-
 /**
  * @author HO.CKERVOAZOU
  */
 @DynamoDbBean
 @RegisterForReflection
-public class EcmDocument {
-    private String id;
-    private int revision;
-    private DocumentCategory documentCategory;
-    private EcmMetadata ecmMetadata;
-    private OffsetDateTime createdAt;
-    private String origin;
+public class EcmDocument extends EcmDocumentBase {
+
     private FileContent fileContent;
-    private String uid;
-    private OffsetDateTime updatedAt;
     StorageInformation storageInformation;
-//    validation?: { isValid: boolean; errors?: any[] };
 
     public EcmDocument(String id, int revision) {
         this.id = id;
@@ -34,9 +24,7 @@ public class EcmDocument {
     public EcmDocument(String id) {
         this.id = id;
     }
-
     public EcmDocument() {
-
     }
 
     @DynamoDbPartitionKey
@@ -59,40 +47,6 @@ public class EcmDocument {
         this.revision = revision;
     }
 
-    @DynamoDbAttribute("type")
-    public DocumentCategory getDocumentCategory() {
-        return documentCategory;
-    }
-
-    public void setDocumentCategory(DocumentCategory documentCategory) {
-        this.documentCategory = documentCategory;
-    }
-
-    @DynamoDbAttribute("metadata")
-    public EcmMetadata getEcmMetadata() {
-        return ecmMetadata;
-    }
-
-    public void setEcmMetadata(EcmMetadata ecmMetadata) {
-        this.ecmMetadata = ecmMetadata;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
-
     public FileContent getFileContent() {
         return fileContent;
     }
@@ -100,16 +54,6 @@ public class EcmDocument {
     public void setFileContent(FileContent fileContent) {
         this.fileContent = fileContent;
     }
-
-
-    public OffsetDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
 
     public StorageInformation getStorageInformation() {
         return storageInformation;

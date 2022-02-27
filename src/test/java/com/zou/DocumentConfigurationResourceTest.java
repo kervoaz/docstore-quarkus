@@ -1,6 +1,6 @@
 package com.zou;
 
-import com.zou.type.DocumentDefinition;
+import com.zou.type.DocumentSchema;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
@@ -15,9 +15,9 @@ import static org.hamcrest.CoreMatchers.is;
 class DocumentConfigurationResourceTest {
 
     @Test
-    void findAll() {
-        given().pathParam("id", "BL")
-                .when().get("/document/definitions/definition/{id}")
+    void get() {
+        given().pathParam("type", "BL")
+                .when().get("/document/definitions/definition/{type}")
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -26,8 +26,15 @@ class DocumentConfigurationResourceTest {
 
     @Test
     void save() {
-        DocumentDefinition documentDefinition = new DocumentDefinition("BL", true);
-        given().body(documentDefinition).contentType(ContentType.JSON)
+        DocumentSchema documentDefinitionBL = new DocumentSchema("BL", true);
+        given().body(documentDefinitionBL).contentType(ContentType.JSON)
+                .when().post("/document/definitions/definition")
+                .then()
+                .statusCode(201)
+                .body(is(""));
+
+        DocumentSchema documentDefinitionINV = new DocumentSchema("INVOICE", false);
+        given().body(documentDefinitionINV).contentType(ContentType.JSON)
                 .when().post("/document/definitions/definition")
                 .then()
                 .statusCode(201)

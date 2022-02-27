@@ -2,6 +2,7 @@ package com.zou.dao;
 
 import com.zou.type.EcmDocument;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
@@ -13,7 +14,9 @@ public interface DocumentMetadataRepository {
     // Store the order item in the database
     void save(EcmDocument ecmDocument);
 
-    EcmDocument findByIdAndRevision(@NotNull String id, @Positive int revision);
+    EcmDocument findByIdAndRevision(@NotEmpty String id, @Positive int revision);
+
+    EcmDocument deleteByIdAndRevision(@NotEmpty String id, @Positive int revision);
 
     List<EcmDocument> findById(@NotNull String id);
 

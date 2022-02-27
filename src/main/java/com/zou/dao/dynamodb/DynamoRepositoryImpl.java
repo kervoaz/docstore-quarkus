@@ -25,8 +25,17 @@ public abstract class DynamoRepositoryImpl<T> {
         this.dynamoDbTable.putItem(dynamoBean);
     }
 
-    // Retrieve a single order item from the database
-    public T findByHashKeyAndRangKey(final String hashKey, final String rangeKey) {
+    // Retrieve all items from the database for the hashKey
+    public T getItem(final String hashKey) {
+        // Construct the key with partition and sort key
+        Key key = Key.builder().partitionValue(hashKey)
+                .build();
+
+        return this.dynamoDbTable.getItem(key);
+    }
+
+    // Retrieve a single item from the database
+    public T getItem(final String hashKey, final String rangeKey) {
         // Construct the key with partition and sort key
         Key key = Key.builder().partitionValue(hashKey)
                 .sortValue(rangeKey)
@@ -35,8 +44,8 @@ public abstract class DynamoRepositoryImpl<T> {
         return this.dynamoDbTable.getItem(key);
     }
 
-
-    public List<T> findByHashKey(final String hashKey) {
+    // Retrieve all items from the database for the hashKey
+    public List<T> findAllByHashKey(final String hashKey) {
         QueryConditional query = QueryConditional.keyEqualTo(
                 Key.builder()
                         .partitionValue(hashKey)
@@ -53,10 +62,4 @@ public abstract class DynamoRepositoryImpl<T> {
 
     }
 
-//    private DynamoDbTable<T> getTable(DynamoDbEnhancedClient dynamoDbEnhancedClient,String tableName) {
-//        // Create a tablescheme to scan our bean class order
-//        return
-//                dynamoDbEnhancedClient.table(tableName,
-//                        TableSchema.fromBean(getType()));
-//    }
 }

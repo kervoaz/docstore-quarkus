@@ -1,6 +1,6 @@
 package com.zou.service;
 
-import com.zou.type.DocumentDefinition;
+import com.zou.type.DocumentSchema;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ class ConfigurationServiceTest {
 
     @Test
     void save() {
-        DocumentDefinition documentDefinition = new DocumentDefinition("BL", true);
+        DocumentSchema documentDefinition = new DocumentSchema("BL", true);
         configurationService.save(documentDefinition);
     }
 }

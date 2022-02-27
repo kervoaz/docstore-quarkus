@@ -7,7 +7,7 @@
     <artifactId>document-store-quarkus</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
-        <lombok.version>1.18.20</lombok.version>
+        <lombok.version>1.18.22</lombok.version>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.source>11</maven.compiler.source>
@@ -16,9 +16,10 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>2.5.1.Final</quarkus.platform.version>
+        <quarkus.platform.version>2.7.0.Final</quarkus.platform.version>
         <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
         <everit.version>1.14.0</everit.version>
+        <software.amazon.awssdk>2.17.121</software.amazon.awssdk>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -26,6 +27,14 @@
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>${quarkus.platform.artifact-id}</artifactId>
                 <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${software.amazon.awssdk}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -57,6 +66,10 @@
             <artifactId>quarkus-amazon-s3</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>netty-nio-client</artifactId>
         </dependency>
@@ -77,7 +90,7 @@
         <dependency>
             <groupId>me.nithanim.quarkus</groupId>
             <artifactId>quarkus-amazon-dynamodb-enhanced</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.quarkus</groupId>
@@ -98,6 +111,17 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!--        validation bean-->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <!--file analysis-->
+        <dependency>
+            <groupId>io.quarkiverse.tika</groupId>
+            <artifactId>quarkus-tika</artifactId>
+            <version>1.0.3</version>
         </dependency>
         <!--        <dependency>-->
         <!--            <groupId>org.everit.json</groupId>-->
@@ -120,8 +144,6 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt-build</artifactId>
         </dependency>
-
-
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
@@ -130,6 +152,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <version>4.5.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -46,7 +46,20 @@ public class DocumentMetadataRepositoryImpl implements DocumentMetadataRepositor
                 .sortValue(revision)
                 .build();
 
-        return ecmDocumentDynamoDbTable.getItem(key);
+        EcmDocument res = ecmDocumentDynamoDbTable.getItem(key);
+        return res;
+    }
+
+    @Override
+    public EcmDocument deleteByIdAndRevision(String id, int revision) {
+        DynamoDbTable<EcmDocument> ecmDocumentDynamoDbTable = getTable();
+        // Construct the key with partition and sort key
+        Key key = Key.builder().partitionValue(id)
+                .sortValue(revision)
+                .build();
+
+        EcmDocument res = ecmDocumentDynamoDbTable.deleteItem(key);
+        return res;
     }
 
     @Override

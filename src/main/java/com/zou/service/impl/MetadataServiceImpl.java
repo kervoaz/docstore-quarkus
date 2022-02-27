@@ -1,10 +1,11 @@
 package com.zou.service.impl;
 
 import com.zou.service.MetadataService;
-import com.zou.type.EcmMetadata;
+import com.zou.type.EcmDocument;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
@@ -14,20 +15,28 @@ import static java.util.stream.Collectors.toMap;
  */
 @ApplicationScoped
 public class MetadataServiceImpl implements MetadataService {
-    private final String DELIMITER = ";";
-
-    //    @Inject
-//    DocumentConfigurationRepository documentConfigurationRepository;
     @Override
-    public EcmMetadata parse(String metadataAsString) {
-        String[] keyValues = metadataAsString.split(DELIMITER);
-        Map<String, String> keyValue = Arrays.stream(keyValues).map(x -> x.split("=")).collect(toMap(str -> str[0],
-                str -> str[1]));
-        return new EcmMetadata(keyValue);
+    public void addMandatory(EcmDocument ecmDocument) {
+        Map<String, String> existing = ecmDocument.getMetadata();
+        if (existing == null) {
+            existing = new HashMap<>();
+            ecmDocument.getMetadata().putAll(existing);
+        }
+        existing.put("#docid", ecmDocument.getId());
+        existing.put("#docrev", String.valueOf(ecmDocument.getRevision()));
+        existing.put("#doctype", ecmDocument.getDocumentSchema().getFunctionalType());
+        existing.put("#filename", ecmDocument.getFileContent().getOriginalName());
     }
 
     @Override
-    public void validate(EcmMetadata ecmMetadata) {
-        //documentConfigurationRepository.getMetadataConfiguration(ecmMetadata.)
+    public Map<String, String> parse(String metadataAsString) {
+        if (metadataAsString != null) {
+            String DELIMITER = ",";
+            String[] keyValues = metadataAsString.split(DELIMITER);
+            return Arrays.stream(keyValues).map(x -> x.split("=")).collect(toMap(str -> str[0],
+                    str -> str[1]));
+        } else {
+            return new HashMap<>();
+        }
     }
 }

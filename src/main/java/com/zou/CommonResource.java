@@ -26,7 +26,7 @@ abstract public class CommonResource {
         return PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(formData.fileName)
-                .contentType(formData.mimeType)
+//                .contentType(formData.mimeType)
                 .build();
     }
 

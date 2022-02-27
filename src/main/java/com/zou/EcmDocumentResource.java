@@ -1,18 +1,22 @@
 package com.zou;
 
+import com.zou.service.ConfigurationService;
 import com.zou.service.EcmDocumentService;
 import com.zou.service.MetadataService;
+import com.zou.service.ValidationService;
 import com.zou.type.*;
+import io.quarkus.tika.TikaMetadata;
+import io.quarkus.tika.TikaParser;
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 
 /**
  * @author HO.CKERVOAZOU
@@ -20,28 +24,63 @@ import java.util.Arrays;
 @Path("/ecmDocument")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Slf4j
 public class EcmDocumentResource {
 
-    @Inject
-    S3Client s3;
 
     @Inject
     EcmDocumentService documentService;
 
     @Inject
+    ValidationService validationService;
+
+    @Inject
+    ConfigurationService configurationService;
+
+    @Inject
     MetadataService metadataService;
 
+    @Inject
+    TikaParser parser;
+
     @GET
-    @Path("/{id}")
-    public Response findDocument(@PathParam("id") String id, @QueryParam("revision") int revision) {
-        return Response.ok(documentService.find(id, revision)).build();
+    @Path("/{documentId}/{revision}")
+    public Response get(@PathParam("documentId") String documentId, @PathParam("revision") int revision) {
+        EcmDocument res = documentService.get(documentId, revision);
+        if (res == null) {
+            return Response.ok(null).status(Response.Status.NO_CONTENT).build();
+        } else {
+            Response resp = Response.ok().status(Response.Status.OK).entity(res).build();
+            return resp;
+        }
+    }
+
+    @DELETE
+    @Path("/{documentId}/{revision}")
+    public Response delete(@PathParam("documentId") String documentId, @PathParam("revision") int revision) {
+        EcmDocument res = documentService.delete(documentId, revision);
+        Response resp = Response.ok().status(Response.Status.OK).entity(res).build();
+        return resp;
+
     }
 
     @GET
-    @Path("/download/{id}")
+    @Path("/{documentId}/latest")
+    public Response getLast(@PathParam("documentId") String documentId) {
+        return Response.ok(documentService.get(documentId, 999)).build();
+    }
+
+    @GET
+    @Path("/{documentId}")
+    public Response getById(@PathParam("documentId") String documentId) {
+        return Response.ok(documentService.find(documentId)).build();
+    }
+
+    @GET
+    @Path("/download/{documentId}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getContent(@PathParam("id") String id, @QueryParam("revision") int revision) {
-        FileContent fileContent = documentService.getContent(id, revision);
+    public Response downloadFile(@PathParam("documentId") String documentId, @QueryParam("revision") int revision) {
+        FileContent fileContent = documentService.getContent(documentId, revision);
         Response.ResponseBuilder response = Response.ok((StreamingOutput) output -> fileContent.getContentDownloaded().writeTo(output));
         response.header("Content-Disposition", "attachment;filename=" + fileContent.getOriginalName());
         response.header("Content-Type", fileContent.getMimeType());
@@ -50,52 +89,53 @@ public class EcmDocumentResource {
     }
 
     @POST
-    @Path("upload/{id}")
+    @Path("/upload/{documentType}/document")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFile(@MultipartForm FormData formData, @PathParam("id") String id) throws Exception {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response uploadFile(@MultipartForm FormData formData, @PathParam("documentType") String documentType) throws Exception {
         try {
-            if (!validateInput(formData)) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-            EcmDocument ecmDocument = asEcmDocument(id, formData);
+            validationService.validate(formData);
+            EcmDocument ecmDocument = asEcmDocument(documentType, formData);
+            metadataService.addMandatory(ecmDocument);
+            validationService.validate((EcmDocumentBase) ecmDocument);
             EcmDocument savedDoc = documentService.save(ecmDocument);
-
             if (savedDoc.getId() == null) {
                 return Response.serverError().build();
             }
             return Response.ok().status(Response.Status.CREATED).entity(new EcmDocumentView(savedDoc)).build();
+
         } catch (Exception e) {
+            log.error("upload failed", e);
             return Response.ok().status(Response.Status.BAD_REQUEST).entity(new ErrorView(e)).build();
         }
     }
 
-    boolean validateInput(FormData input) {
-        boolean isValid = true;
-        if (input.fileName == null || input.fileName.isEmpty()) {
-            isValid = false;
-        }
-        if (input.mimeType == null || input.mimeType.isEmpty()) {
-            isValid = false;
-        }
-        if (input.documentType == null || input.documentType.isEmpty() || Arrays.stream(FunctionalType.values()).noneMatch(x -> x.toString().equalsIgnoreCase(input.documentType))) {
-            isValid = false;
-        }
-        return isValid;
-    }
 
-    EcmDocument asEcmDocument(String id, FormData formData) {
-        EcmDocument ecmDocument = new EcmDocument(id);
+    EcmDocument asEcmDocument(String documentType, FormData formData) {
+        EcmDocument ecmDocument = new EcmDocument();
+        ecmDocument.setId(formData.documentId != null ? formData.documentId : ecmDocument.getUuid().toString());
+        ecmDocument.setRevision(0);
+        ecmDocument.setCreatedAt(OffsetDateTime.now());
+        ecmDocument.setUpdatedAt(OffsetDateTime.now());
         FileContent fileContent = new FileContent();
-        fileContent.setContent(formData.data);
         fileContent.setOriginalName(formData.fileName);
-        fileContent.setMimeType(formData.mimeType);
+        if (formData.fileAnalyzer) {
+            //SequenceInputStream can be read only one time and reset is not supported--> duplicate stream
+            InputStream[] cloned = Utils.duplicateStream(formData.fileContent);
+            fileContent.setContent(cloned[0]);
+            if (cloned[1] != null) {
+                TikaMetadata detectedMetadata = parser.getMetadata(cloned[1]);
+                String fileSize = detectedMetadata.getSingleValue("File Size");//TODO ?
+                String mimeTypeDetected = detectedMetadata.getSingleValue("Content-Type");
+                fileContent.setMimeType(mimeTypeDetected);
+            }
+        } else {
+            fileContent.setContent(formData.fileContent);
+        }
         ecmDocument.setFileContent(fileContent);
         ecmDocument.setCreatedAt(OffsetDateTime.now());
-        ecmDocument.setEcmMetadata(metadataService.parse(formData.meta));
-        DocumentCategory documentCategory = new DocumentCategory(FunctionalType.valueOf(formData.documentType));
-        ecmDocument.setDocumentCategory(documentCategory);
-
-        metadataService.validate(ecmDocument.getEcmMetadata());
+        ecmDocument.setMetadata(metadataService.parse(formData.meta));
+        ecmDocument.setDocumentSchema(configurationService.findByType(documentType));
         return ecmDocument;
     }
 }

@@ -1,12 +1,25 @@
 package com.zou.service;
 
-import com.zou.type.EcmMetadata;
+import com.zou.type.EcmDocument;
+
+import java.util.Map;
 
 /**
  * @author HO.CKERVOAZOU
  */
 public interface MetadataService {
-    EcmMetadata parse(String metadataAsString);
+    /**
+     * add metadata
+     *
+     * @param ecmDocument
+     */
+    void addMandatory(EcmDocument ecmDocument);
 
-    void validate(EcmMetadata ecmMetadata);
+    /**
+     * Parse metadata received as parameter
+     *
+     * @param metadataAsString
+     * @return
+     */
+    Map<String, String> parse(String metadataAsString);
 }

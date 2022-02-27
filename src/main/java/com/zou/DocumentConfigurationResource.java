@@ -1,7 +1,7 @@
 package com.zou;
 
 import com.zou.service.ConfigurationService;
-import com.zou.type.DocumentDefinition;
+import com.zou.type.DocumentSchema;
 import io.quarkus.vertx.web.Body;
 
 import javax.inject.Inject;
@@ -16,16 +16,16 @@ public class DocumentConfigurationResource {
     ConfigurationService configurationService;
 
     @GET
-    @Path("/definition/{id}")
+    @Path("/definition/{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findAll(@PathParam("id") String config) {
-        return Response.status(Response.Status.OK).entity(configurationService.findByType(config)).build();
+    public Response get(@PathParam("type") String type) {
+        return Response.status(Response.Status.OK).entity(configurationService.findByType(type)).build();
     }
 
     @POST
     @Path("/definition")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response save(@Body DocumentDefinition documentDefinition) {
+    public Response save(@Body DocumentSchema documentDefinition) {
         configurationService.save(documentDefinition);
         return Response.status(Response.Status.CREATED).build();
     }

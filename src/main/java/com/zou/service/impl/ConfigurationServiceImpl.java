@@ -2,10 +2,13 @@ package com.zou.service.impl;
 
 import com.zou.dao.DocumentDefinitionRepository;
 import com.zou.service.ConfigurationService;
-import com.zou.type.DocumentDefinition;
+import com.zou.type.DocumentSchema;
+import io.quarkus.cache.CacheResult;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author HO.CKERVOAZOU
@@ -13,15 +16,16 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class ConfigurationServiceImpl implements ConfigurationService {
     @Inject
-    private DocumentDefinitionRepository documentDefinitionRepository;
+    DocumentDefinitionRepository documentDefinitionRepository;
 
     @Override
-    public DocumentDefinition findByType(String documentType) {
+    @CacheResult(cacheName = "documentSchema-cache")
+    public DocumentSchema findByType(@NotEmpty String documentType) {
         return documentDefinitionRepository.findByType(documentType);
     }
 
     @Override
-    public void save(DocumentDefinition documentDefinition) {
-        documentDefinitionRepository.save(documentDefinition);
+    public void save(@NotNull DocumentSchema documentDefinition) {
+        documentDefinitionRepository.store(documentDefinition);
     }
 }

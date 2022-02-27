@@ -1,6 +1,6 @@
 package com.zou.service;
 
-import com.zou.type.DocumentCategory;
+import com.zou.type.DocumentSchema;
 import com.zou.type.EcmDocument;
 import com.zou.type.FileContent;
 import com.zou.type.FunctionalType;
@@ -9,7 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
+import java.io.SequenceInputStream;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author HO.CKERVOAZOU
@@ -22,20 +25,21 @@ class EcmDocumentServiceTest {
     @Test
     void testSave() {
         EcmDocument ecmDocument = new EcmDocument("zou1");
-
-        DocumentCategory type = new DocumentCategory(FunctionalType.BL);
-        type.setAllowRevision(true);
-        ecmDocument.setDocumentCategory(type);
-
+        DocumentSchema type = new DocumentSchema(FunctionalType.BL.toString(), true);
+        ecmDocument.setDocumentSchema(type);
         ecmDocument.setCreatedAt(OffsetDateTime.now());
         ecmDocument.setUpdatedAt(OffsetDateTime.now());
-
         FileContent fileContent = new FileContent();
-        fileContent.setContent(new ByteArrayInputStream("blabla content of file".getBytes()));
+        ByteArrayInputStream in1 = new ByteArrayInputStream("blabla content of file 1 ".getBytes());
+        ByteArrayInputStream in2 = new ByteArrayInputStream("blabla content of file 2".getBytes());
+        fileContent.setContent(new SequenceInputStream(in1, in2));
         fileContent.setCompressed(false);
         fileContent.setOriginalName("readme.txt");
         fileContent.setMimeType("txt");
         ecmDocument.setFileContent(fileContent);
+        Map<String, String> ecmMetadata = new HashMap<>();
+        ecmMetadata.put("zou", "test");
+        ecmDocument.setMetadata(ecmMetadata);
 
         EcmDocument res = ecmDocumentService.save(ecmDocument);
         res.getId();

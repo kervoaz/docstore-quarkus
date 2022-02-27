@@ -1,7 +1,7 @@
 package com.zou.dao.dynamodb;
 
 import com.zou.dao.DocumentDefinitionRepository;
-import com.zou.type.DocumentDefinition;
+import com.zou.type.DocumentSchema;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -9,12 +9,14 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author HO.CKERVOAZOU
  */
 @ApplicationScoped
-public class DocumentDefinitionRepositoryImpl extends DynamoRepositoryImpl<DocumentDefinition> implements DocumentDefinitionRepository {
+public class DocumentDefinitionRepositoryImpl extends DynamoRepositoryImpl<DocumentSchema> implements DocumentDefinitionRepository {
 
     @ConfigProperty(name = "docs.dynamodb.document.definition.table-name")
     String tableName;
@@ -29,17 +31,17 @@ public class DocumentDefinitionRepositoryImpl extends DynamoRepositoryImpl<Docum
     @PostConstruct
     void init() {
         super.dynamoDbTable = dynamoDbEnhancedClient.table(tableName,
-                TableSchema.fromBean(DocumentDefinition.class));
+                TableSchema.fromBean(DocumentSchema.class));
     }
 
     @Override
-    public DocumentDefinition findByType(String documentType) {
-        return findByHashKey(documentType).get(0);
+    public DocumentSchema findByType(@NotEmpty String documentType) {
+        return getItem(documentType);
     }
 
     // Store the order item in the database
     @Override
-    public void save(final DocumentDefinition documentDefinition) {
-        super.save(documentDefinition);
+    public void store(@NotNull final DocumentSchema documentSchema) {
+        save(documentSchema);
     }
 }
