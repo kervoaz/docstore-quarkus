@@ -2,6 +2,7 @@ package com.zou.service.impl;
 
 import com.zou.service.MetadataService;
 import com.zou.type.EcmDocument;
+import com.zou.type.exception.MetadataValidationException;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Arrays;
@@ -31,6 +32,10 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     public Map<String, String> parse(String metadataAsString) {
         if (metadataAsString != null) {
+            if (!metadataAsString.contains("=")) {
+                throw new MetadataValidationException("Metadata must be provided as key=value and separated by , if " +
+                        "multi");
+            }
             String DELIMITER = ",";
             String[] keyValues = metadataAsString.split(DELIMITER);
             return Arrays.stream(keyValues).map(x -> x.split("=")).collect(toMap(str -> str[0],

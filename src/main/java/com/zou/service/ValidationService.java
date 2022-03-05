@@ -16,4 +16,6 @@ public interface ValidationService {
     void validate(@NotNull EcmDocumentBase ecmDocument);
 
     void validate(@NotNull FormData formData);
+
+    void validate(@NotNull FormData formData, @NotNull String documentType);
 }

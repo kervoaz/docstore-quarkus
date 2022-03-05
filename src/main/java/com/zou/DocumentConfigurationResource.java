@@ -2,14 +2,15 @@ package com.zou;
 
 import com.zou.service.ConfigurationService;
 import com.zou.type.DocumentSchema;
-import io.quarkus.vertx.web.Body;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/document/definitions")
+@ApplicationScoped
 public class DocumentConfigurationResource {
 
     @Inject
@@ -25,7 +26,7 @@ public class DocumentConfigurationResource {
     @POST
     @Path("/definition")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response save(@Body DocumentSchema documentDefinition) {
+    public Response save(DocumentSchema documentDefinition) {
         configurationService.save(documentDefinition);
         return Response.status(Response.Status.CREATED).build();
     }

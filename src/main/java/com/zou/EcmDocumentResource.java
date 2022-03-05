@@ -10,6 +10,7 @@ import io.quarkus.tika.TikaParser;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -22,8 +23,7 @@ import java.time.OffsetDateTime;
  * @author HO.CKERVOAZOU
  */
 @Path("/ecmDocument")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@ApplicationScoped
 @Slf4j
 public class EcmDocumentResource {
 
@@ -42,6 +42,7 @@ public class EcmDocumentResource {
 
     @Inject
     TikaParser parser;
+
 
     @GET
     @Path("/{documentId}/{revision}")
@@ -92,9 +93,9 @@ public class EcmDocumentResource {
     @Path("/upload/{documentType}/document")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadFile(@MultipartForm FormData formData, @PathParam("documentType") String documentType) throws Exception {
+    public Response uploadFile(@MultipartForm FormData formData, @PathParam("documentType") String documentType) {
         try {
-            validationService.validate(formData);
+            validationService.validate(formData, documentType);
             EcmDocument ecmDocument = asEcmDocument(documentType, formData);
             metadataService.addMandatory(ecmDocument);
             validationService.validate((EcmDocumentBase) ecmDocument);
@@ -135,6 +136,7 @@ public class EcmDocumentResource {
         ecmDocument.setFileContent(fileContent);
         ecmDocument.setCreatedAt(OffsetDateTime.now());
         ecmDocument.setMetadata(metadataService.parse(formData.meta));
+        //configservice can be already call. be sure that call is cached
         ecmDocument.setDocumentSchema(configurationService.findByType(documentType));
         return ecmDocument;
     }

@@ -1,7 +1,9 @@
 package com.zou.service.impl;
 
 import com.zou.FormData;
+import com.zou.service.ConfigurationService;
 import com.zou.service.ValidationService;
+import com.zou.type.DocumentSchema;
 import com.zou.type.EcmDocument;
 import com.zou.type.EcmDocumentBase;
 import com.zou.type.exception.DocumentValidationException;
@@ -23,6 +25,8 @@ public class ValidationServiceImpl implements ValidationService {
     @Inject
     Validator validator;
 
+    @Inject
+    ConfigurationService configurationService;
 
     @Override
     public void validate(EcmDocument ecmDocument) {
@@ -49,5 +53,14 @@ public class ValidationServiceImpl implements ValidationService {
             Formatter<FormData> formatter = new Formatter<>();
             throw new UserInputValidationException(formatter.formatValidation(violations));
         }
+    }
+
+    @Override
+    public void validate(FormData formData, String documentType) {
+        DocumentSchema documentSchema = configurationService.findByType(documentType);
+        if (documentSchema == null) {
+            throw new UserInputValidationException("DocumentType is not correct and document schema cannot be found");
+        }
+        validate(formData);
     }
 }

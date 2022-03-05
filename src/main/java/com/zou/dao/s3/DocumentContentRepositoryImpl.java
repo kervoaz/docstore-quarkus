@@ -83,7 +83,7 @@ public class DocumentContentRepositoryImpl extends CommonS3 implements DocumentC
 
     String getS3ObjectKey(EcmDocument ecmDocument) {
         String[] file = ecmDocument.getFileContent().getOriginalName().split("\\.");
-        if (file[1] != null) {
+        if (file.length > 1 && file[1] != null) {
             return OffsetDateTime.now().getYear() + "/" + ecmDocument.getId() + "." + file[1];
         } else {
             return OffsetDateTime.now().getYear() + "/" + ecmDocument.getId();
