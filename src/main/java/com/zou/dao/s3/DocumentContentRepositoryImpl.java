@@ -31,6 +31,7 @@ public class DocumentContentRepositoryImpl extends CommonS3 implements DocumentC
     String bucketName;
 
     @Inject
+//    @Named("aws")
     S3Client s3;
 
     @Override
@@ -82,11 +83,30 @@ public class DocumentContentRepositoryImpl extends CommonS3 implements DocumentC
     }
 
     String getS3ObjectKey(EcmDocument ecmDocument) {
+        StringBuilder objectKey = new StringBuilder();
+        if (ecmDocument.getDocumentSchema().getStoragePathPattern() != null) {
+            String[] items = ecmDocument.getDocumentSchema().getStoragePathPattern().split("/");
+            for (String item : items) {
+                if (item.equalsIgnoreCase("YEAR")) {
+                    objectKey.append(OffsetDateTime.now().getYear());
+                }
+                if (item.equalsIgnoreCase("MONTH")) {
+                    objectKey.append(String.format("%02d", OffsetDateTime.now().getMonthValue()));
+                }
+                if (item.equalsIgnoreCase("DOCTYPE")) {
+                    objectKey.append(ecmDocument.getDocumentSchema().getFunctionalType());
+                }
+                objectKey.append("/");
+            }
+        } else {
+            log.debug("use default path pattern");
+            objectKey.append(OffsetDateTime.now().getYear()).append("/").append(ecmDocument.getDocumentSchema().getFunctionalType()).append("/");
+        }
         String[] file = ecmDocument.getFileContent().getOriginalName().split("\\.");
         if (file.length > 1 && file[1] != null) {
-            return OffsetDateTime.now().getYear() + "/" + ecmDocument.getId() + "." + file[1];
+            return objectKey.append(ecmDocument.getId()).append(".").append(file[1]).toString();
         } else {
-            return OffsetDateTime.now().getYear() + "/" + ecmDocument.getId();
+            return objectKey.append(ecmDocument.getId()).toString();
         }
     }
 }

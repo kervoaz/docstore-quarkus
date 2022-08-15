@@ -62,4 +62,13 @@ public abstract class DynamoRepositoryImpl<T> {
 
     }
 
+    public List<T> scan() {
+        PageIterable<T> ecmDocumentPageIterable =
+                this.dynamoDbTable.scan();
+
+        return ecmDocumentPageIterable.items()
+                .stream().collect(Collectors.toList());
+
+    }
+
 }

@@ -1,0 +1,403 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: 'DOCSTORE - API'
+  description: "DOCSTORE ECM"
+  contact:
+    name: C KERVOAZOU
+    url: https://github.com/kervoaz
+    email: kervoaz@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags:
+  - name: Documents
+    description: Document operations
+  - name: Configuration
+    description: Configuration operations
+paths:
+  /definitions/{type}:
+    get:
+      summary: Get document definition.
+      description:
+        <p>Get document definition</p>
+      operationId: getDefinition
+      tags:
+        - Configuration
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Definition retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentSchema'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /definitions:
+    get:
+      summary: List document definitions.
+      description:
+        <p>List document definitions</p>
+      operationId: listDefinitions
+      tags:
+        - Configuration
+      responses:
+        '201':
+          description: Definitions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentSchema'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /definition/{type}:
+    post:
+      summary: Save a document definition (aka schema or template)
+      description: <br>Define rules for a type document. Document of this type must conform to this definition</br>
+      operationId: storeDefinition
+      tags:
+        - Configuration
+
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: the document definition
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentSchema'
+      responses:
+        '201':
+          description: Event posted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentSchema'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/{documentId}:
+    get:
+      summary: Get document by documentId.
+      description: <br>Get document by documentId. If revision is not provided, all revisions are returned</br>
+      operationId: getDocument
+      tags:
+        - Documents
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: revision
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event posted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete document by documentId and revision.
+      description: <br>Delete document.</br>
+      operationId: deleteDocument
+      tags:
+        - Documents
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: revision
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/{documentId}/lastRevision:
+    get:
+      summary: Get lastRevision of a document by documentId.
+      description: <br>Get document by documentId.</br>
+      operationId: getDocumentLastRevision
+      tags:
+        - Documents
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event posted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/{documentId}/content:
+    get:
+      tags:
+        - Documents
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: revision
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: return content of file and information. If revision not provided, last revision is assumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/{documentType}/document:
+    post:
+      tags:
+        - Documents
+      summary: upload file content and document info.
+      description:
+        <p>Store a document with metadata and information according its documentType (related to document defintion) .</p>
+        <p>The documentType must exist and defines some mandatory data for this document</p>
+        <b>see definitions</b>
+
+      operationId: uploadDocument
+      parameters:
+        - in: path
+          name: documentType
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: the event
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                documentId:
+                  type: string
+                mimeType:
+                  type: string
+                metadata:
+                  type: string
+                documentDate:
+                  type: string
+                  format: date-time
+                fileAnalyzer:
+                  type: boolean
+                file:
+                  type: string
+                  format: binary
+
+      responses:
+        '201':
+          description: Event posted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Document:
+      type: object
+      properties:
+        documentType:
+          $ref: '#/components/schemas/DocumentType'
+        id:
+          type: integer
+          format: int64
+          description: technical Id of the document Lara table
+        documentId:
+          type: string
+          description: Id of the document in UCM
+        documentVersion:
+          type: integer
+          format: int32
+          description: 'version of the document like 1, 2, ...'
+    DocumentType:
+      type: object
+      properties:
+        code:
+          type: string
+          description: DocumentType code
+        category:
+          type: string
+          description: Document Category
+        status:
+          type: string
+          description: >-
+            Document status<br>
+            May be one of DRAFT, ORIGINAL, COPY
+        name:
+          type: string
+          description: DocumentType name
+    DocumentSchema:
+      type: object
+      properties:
+        functionalType:
+          type: string
+          description: type of the document
+        allowRevision:
+          type: boolean
+          description: type of document allows revisions
+        mandatoryMetadatas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metadata'
+          description: mandatory metadata checked before save
+        storagePathPattern:
+          type: string
+          description: 'storage path builds according this string. Allowed terms are YEAR, MONTH, DOCTYPE and can be combined /YEAR/MONTH/DOCTYPE. If not specified: YEAR/DOCTYPE'
+      required:
+        - functionalType
+        - allowRevision
+    Metadata:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+
+    StorageInformation:
+      type: object
+      properties:
+        bucket:
+          type: string
+          description: S3 bucket
+        objectKey:
+          type: string
+          description: S3 key object
+        versionId:
+          type: string
+          description: internal version of the document
+
+    Error:
+      type: object
+      required:
+        - httpMethod
+        - requestUri
+        - errors
+        - statusCode
+        - statusCodeText
+        - errorDateTime
+      properties:
+        httpMethod:
+          description: The HTTP request method type
+          type: string
+          example: POST
+        requestUri:
+          description: The request URI.
+          type: string
+          example: https://dcsa.org/dcsa/tnt/v1/events
+        errors:
+          $ref: '#/components/schemas/Errors'
+        statusCode:
+          description: The HTTP status code
+          type: string
+          example: 400
+        statusCodeText:
+          description: The textual representation of the response status.
+          type: string
+          example: Bad Request
+        errorDateTime:
+          description: The date and time (in ISO 8601 format) the error occured.
+          type: string
+          example: '2019-11-12T07:41:00+08:30'
+    Errors:
+      type: array
+      items:
+        type: object
+        properties:
+          reason:
+            description: High level error message.
+            type: string
+            example: invalidQuery
+          message:
+            description: Detailed error message.
+            type: string
+            example: The request did not contain one of the three required query parameters.
+        required:
+          - reason
+          - message
+    ####String variables below
+  headers:
+    API-Version:
+      description: SemVer used to indicate the version of the contract (API version) returned.
+      schema:
+        type: string
+        example: 2.1.0

@@ -4,6 +4,8 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttri
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 /**
@@ -11,9 +13,13 @@ import java.util.Map;
  */
 @DynamoDbBean
 public class DocumentSchema {
+    @NotEmpty
     String functionalType;
+    @NotNull
     boolean allowRevision;
     Map<String, String> mandatoryMetadata;
+
+    String storagePathPattern;
 
     public DocumentSchema() {
     }
@@ -41,11 +47,19 @@ public class DocumentSchema {
         this.allowRevision = allowRevision;
     }
 
-    public Map<String, String> getEcmMetadata() {
+    public Map<String, String> getMandatoryMetadata() {
         return mandatoryMetadata;
     }
 
-    public void setEcmMetadata(Map<String, String> mandatoryMetadata) {
+    public void setMandatoryMetadata(Map<String, String> mandatoryMetadata) {
         this.mandatoryMetadata = mandatoryMetadata;
+    }
+
+    public String getStoragePathPattern() {
+        return storagePathPattern;
+    }
+
+    public void setStoragePathPattern(String storagePathPattern) {
+        this.storagePathPattern = storagePathPattern;
     }
 }

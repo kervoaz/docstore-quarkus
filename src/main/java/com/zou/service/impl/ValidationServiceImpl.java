@@ -2,6 +2,7 @@ package com.zou.service.impl;
 
 import com.zou.FormData;
 import com.zou.service.ConfigurationService;
+import com.zou.service.MetadataService;
 import com.zou.service.ValidationService;
 import com.zou.type.DocumentSchema;
 import com.zou.type.EcmDocument;
@@ -14,6 +15,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,6 +31,9 @@ public class ValidationServiceImpl implements ValidationService {
 
     @Inject
     ConfigurationService configurationService;
+
+    @Inject
+    MetadataService metadataService;
 
     @Override
     public void validate(EcmDocument ecmDocument) {
@@ -62,5 +69,15 @@ public class ValidationServiceImpl implements ValidationService {
             throw new UserInputValidationException("DocumentType is not correct and document schema cannot be found");
         }
         validate(formData);
+        Map<String, String> postedMeta = metadataService.parse(formData.meta);
+        List<String> missingMeta = new ArrayList<>();
+        for (String mandatory : documentSchema.getMandatoryMetadata().keySet()) {
+            if (postedMeta.get(mandatory) == null || postedMeta.get(mandatory).isEmpty()) {
+                missingMeta.add(mandatory);
+            }
+        }
+        if (!missingMeta.isEmpty()) {
+            throw new UserInputValidationException("Missing metadata " + missingMeta.toString() + " for current documentType " + documentType);
+        }
     }
 }

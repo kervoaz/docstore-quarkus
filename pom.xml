@@ -16,7 +16,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>2.7.2.Final</quarkus.platform.version>
+        <quarkus.platform.version>2.11.2.Final</quarkus.platform.version>
+        <quarkiverse.version>1.0.2</quarkiverse.version>
         <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
         <everit.version>1.14.0</everit.version>
         <software.amazon.awssdk>2.17.121</software.amazon.awssdk>
@@ -41,9 +42,23 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>io.quarkiverse.openapi.generator</groupId>
+            <artifactId>quarkus-openapi-generator</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <!--        [WARNING] The artifact io.quarkus:quarkus-amazon-dynamodb:jar:2.11.2.Final has been relocated to io.quarkiverse.amazonservices:quarkus-amazon-dynamodb:jar:1.0.2-->
+        <!--        [WARNING] The artifact io.quarkus:quarkus-amazon-s3:jar:2.11.2.Final has been relocated to io.quarkiverse.amazonservices:quarkus-amazon-s3:jar:1.0.2-->
+        <dependency>
+            <groupId>io.quarkiverse.amazonservices</groupId>
             <artifactId>quarkus-amazon-dynamodb</artifactId>
+            <version>${quarkiverse.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.amazonservices</groupId>
+            <artifactId>quarkus-amazon-s3</artifactId>
+            <version>${quarkiverse.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -61,10 +76,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-mutiny</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-amazon-s3</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-cache</artifactId>
@@ -134,19 +146,19 @@
         <!--            <artifactId>quarkus-elytron-security-oauth2</artifactId>-->
         <!--        </dependency>-->
 
+        <!--        <dependency>-->
+        <!--            <groupId>io.quarkus</groupId>-->
+        <!--            <artifactId>quarkus-oidc</artifactId>-->
+        <!--        </dependency>-->
+        <!--oauth jwt valid smallrye need the key in poperties-->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-oidc</artifactId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
         </dependency>
-        <!--oauth jwt valid-->
-        <!--        <dependency>-->
-        <!--            <groupId>io.quarkus</groupId>-->
-        <!--            <artifactId>quarkus-smallrye-jwt</artifactId>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>io.quarkus</groupId>-->
-        <!--            <artifactId>quarkus-smallrye-jwt-build</artifactId>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt-build</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
@@ -161,6 +173,20 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>

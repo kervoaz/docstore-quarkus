@@ -5,6 +5,9 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 
@@ -27,6 +30,9 @@ class DocumentConfigurationResourceTest {
     @Test
     void save() {
         DocumentSchema documentDefinitionBL = new DocumentSchema("BL", true);
+        Map<String, String> metaMandatory = new HashMap<>();
+        metaMandatory.put("xBL", "String");
+        documentDefinitionBL.setMandatoryMetadata(metaMandatory);
         given().body(documentDefinitionBL).contentType(ContentType.JSON)
                 .when().post("/document/definitions/definition")
                 .then()

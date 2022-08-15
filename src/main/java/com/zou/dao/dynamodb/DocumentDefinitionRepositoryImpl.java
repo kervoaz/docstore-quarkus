@@ -11,6 +11,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author HO.CKERVOAZOU
@@ -37,6 +38,11 @@ public class DocumentDefinitionRepositoryImpl extends DynamoRepositoryImpl<Docum
     @Override
     public DocumentSchema findByType(@NotEmpty String documentType) {
         return getItem(documentType);
+    }
+
+    @Override
+    public List<DocumentSchema> list() {
+        return scan();
     }
 
     // Store the order item in the database

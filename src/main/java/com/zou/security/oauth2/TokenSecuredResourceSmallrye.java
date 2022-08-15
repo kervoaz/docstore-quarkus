@@ -34,10 +34,10 @@ public class TokenSecuredResourceSmallrye {
 
     @GET
     @Path("roles-allowed")
-    @RolesAllowed({"pushapi-monitor:read:be", "Admin"})
+    @RolesAllowed({"pushapi-monitor:read:be"})
     @Produces(MediaType.TEXT_PLAIN)
     public String helloRolesAllowed(@Context SecurityContext ctx) {
-        return getResponseString(ctx) + ", birthdate: " + jwt.getClaim("birthdate").toString();
+        return getResponseString(ctx) + ", scope: " + jwt.getClaim("scope").toString();
     }
 
     private String getResponseString(SecurityContext ctx) {

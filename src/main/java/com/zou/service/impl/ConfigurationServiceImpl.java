@@ -9,6 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author HO.CKERVOAZOU
@@ -22,6 +23,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     @CacheResult(cacheName = "documentSchema-cache")
     public DocumentSchema findByType(@NotEmpty String documentType) {
         return documentDefinitionRepository.findByType(documentType);
+    }
+
+    @Override
+    public List<DocumentSchema> list() {
+        return documentDefinitionRepository.list();
     }
 
     @Override
